@@ -1,0 +1,20 @@
+path: "public"
+
+server:
+  docroot: public
+  port: 9000
+
+core config:
+  dbname: wpplayground
+  dbuser: root
+  dbhost: localhost
+  extra-php: |
+    define('WP_HOME',    'http://localhost:9000');
+    define('WP_SITEURL', 'http://localhost:9000');
+
+core install:
+  admin_user: josh
+  admin_password: passw0rd
+  admin_email: jpriddle@me.com
+  url: http://localhost:9000
+  title: "WordPress Playground"
