@@ -1,4 +1,4 @@
-.PHONY: install default clean
+.PHONY: install default clean clean-themes clean-plugins clean-db
 
 # Non-default themes that have been installed
 INSTALLED_THEMES=`wp theme list --field=name 2> /dev/null | grep -v -E '^twenty(fif|four|thir)teen$$'`
@@ -20,9 +20,15 @@ install:
 	wp db create
 	wp core install
 
-clean:
-	for theme in $(INSTALLED_THEMES); do wp theme uninstall $$theme; done
-	for plugin in $(INSTALLED_PLUGINS); do wp plugin uninstall $$plugin; done
-	wp db drop --yes
+clean: clean-plugins clean-themes clean-db
 	rm -f public/wp-config.php
 	rm -rf public/wp-content/uploads
+
+clean-themes:
+	for theme in `wp theme list --field=name 2> /dev/null | grep -v -E '^twenty(fif|four|thir)teen$$'`; do wp theme uninstall --deactivate $$theme; done
+
+clean-plugins:
+	for plugin in `wp plugin list --field=name 2> /dev/null | grep -v -E '^akismet|hello$$'`; do wp plugin uninstall --deactivate $$plugin; done
+
+clean-db:
+	wp db drop --yes
