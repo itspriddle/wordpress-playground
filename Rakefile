@@ -18,7 +18,7 @@ def wp(cmd)
 end
 
 def list(type)
-	wp("#{type.to_s.chop} list --field=name 2> /dev/null").strip.split("\n").reject do |name|
+  wp("#{type.to_s.chop} list --field=name 2> /dev/null").strip.split("\n").reject do |name|
     send(:"default_#{type}").include? name
   end
 end
