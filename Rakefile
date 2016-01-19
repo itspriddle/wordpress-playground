@@ -1,5 +1,5 @@
 def default_themes
-  %W(twentythirteen twentyfourteen twentyfifteen twentysizteen).freeze
+  %W(twentythirteen twentyfourteen twentyfifteen twentysixteen).freeze
 end
 
 def default_plugins
