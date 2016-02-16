@@ -36,6 +36,10 @@ namespace :clean do
 
   desc "Uninstall non-default themes"
   task :themes do
+    # We need to switch to a default theme in order to delete a custom one
+    # that has been activated
+    wp "theme activate twentysixteen"
+
     list(:themes).each do |name|
       wp "theme delete #{name}"
     end
