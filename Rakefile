@@ -80,3 +80,6 @@ namespace :install do
     wp "core install"
   end
 end
+
+desc "Reinstall WordPress"
+task reinstall: %i(clean install)
