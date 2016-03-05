@@ -15,6 +15,6 @@ core config:
 core install:
   admin_user: josh
   admin_password: passw0rd
-  admin_email: jpriddle@me.com
+  admin_email: priddle@Joshuas-MacBook-Pro.local
   url: http://localhost:9000
   title: "WordPress Playground"
