@@ -14,11 +14,14 @@ On OS X you need to configure `/etc/php.ini` to know about Homebrew's MySQL:
 
 ## Usage
 
+Generate `wp-cli.local.yml`, see `rake -D install:wp-cli` for customization
+options:
+
+    rake install:wp-cli
+
 Install:
 
-    wp core config
-    wp db create
-    wp core install
+    rake install
 
 Run server:
 
@@ -27,3 +30,7 @@ Run server:
 View in browser:
 
     open http://localhost:9000/
+
+Kill everything:
+
+    rake clean

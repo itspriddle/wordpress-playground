@@ -1,3 +1,11 @@
+class String
+  def strip_heredoc
+    min = scan(/^[ \t]*(?=\S)/).min
+    indent = (min && min.size) || 0
+    gsub(/^[ \t]{#{indent}}/, '')
+  end
+end
+
 def default_themes
   %W(twentythirteen twentyfourteen twentyfifteen twentysixteen).freeze
 end
@@ -21,6 +29,50 @@ def list(type)
   wp("#{type.to_s.chop} list --field=name 2> /dev/null").strip.split("\n").reject do |name|
     send(:"default_#{type}").include? name
   end
+end
+
+def wp_cli_config
+  @wp_cli_config ||= Class.new do
+    attr_reader :user, :password, :email, :port, :url, :title, :dbname,
+      :dbuser, :dbhost
+
+    def initialize
+      @user     = ENV.fetch("WP_USERNAME")    { ENV["USER"] }
+      @password = ENV.fetch("WP_PASSWORD")    { "passw0rd" }
+      @email    = ENV.fetch("WP_EMAIL")       { "#{ENV["USER"]}@#{`hostname`.chomp}" }
+      @port     = ENV.fetch("WP_SERVER_PORT") { 9000 }
+      @url      = ENV.fetch("WP_URL")         { "http://localhost:#{port}" }
+      @title    = ENV.fetch("WP_TITLE")       { "WordPress Playground" }
+      @dbname   = ENV.fetch("WP_DBNAME")      { "wpplayground" }
+      @dbuser   = ENV.fetch("WP_DBUSER")      { "root" }
+      @dbhost   = ENV.fetch("WP_DBHOST")      { "localhost" }
+    end
+
+    def to_yaml
+      <<-YML.strip_heredoc
+        path: "public"
+
+        server:
+          docroot: public
+          port: #{wp_cli_config.port}
+
+        core config:
+          dbname: #{wp_cli_config.dbname}
+          dbuser: #{wp_cli_config.dbuser}
+          dbhost: #{wp_cli_config.dbhost}
+          extra-php: |
+            define('WP_HOME',    '#{wp_cli_config.url}');
+            define('WP_SITEURL', '#{wp_cli_config.url}');
+
+        core install:
+          admin_user: #{wp_cli_config.user}
+          admin_password: #{wp_cli_config.password}
+          admin_email: #{wp_cli_config.email}
+          url: #{wp_cli_config.url}
+          title: #{wp_cli_config.title}
+      YML
+    end
+  end.new
 end
 
 desc "Completely clean plugins, themes, configs, db and uploads"
@@ -65,6 +117,37 @@ desc "Install WordPress"
 task install: %i(install:config install:db install:core)
 
 namespace :install do
+  desc <<-DESC.strip_heredoc
+  Create wp-cli.local.yml
+
+  This task creates a basic `wp-cli.local.yml` file with default settings for
+  some wp-cli commands.
+
+  The following ENV variables can be passed:
+
+    WP_USERNAME    - Username for WP-Admin account
+                     Default is: $USER
+    WP_PASSWORD    - Password for WP-Admin account
+                     Default is: passw0rd
+    WP_EMAIL       - Email for WP-Admin account
+                     Default is: $USER@$HOSTNAME
+    WP_SERVER_PORT - Port used to run PHP webserver server
+                     Default is: 9000
+    WP_URL         - WordPress blog URL (make sure to include port)
+                     Default is: http://localhost:9000
+    WP_TITLE       - WordPress blog title
+                     Default is: WordPress Playground
+    WP_DBNAME      - MySQL database name
+                     Default is: wpplayground
+    WP_DBUSER      - MySQL database name
+                     Default is: root
+    WP_DBHOST      - MySQL database host (usually localhost)
+                     Default is: localhost
+  DESC
+  task :"wp-cli" do
+    File.write "wp-cli.local.yml", wp_cli_config.to_yaml
+  end
+
   desc "Create wp-config.php"
   task :config do
     wp "core config"
